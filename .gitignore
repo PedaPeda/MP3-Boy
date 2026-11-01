@@ -1,0 +1,5 @@
+*.o
+*.sym
+src/player_base.gb
+src/font.2bpp
+__pycache__/
