@@ -14,4 +14,5 @@ lines = "\n".join(b[i:i+76] for i in range(0, len(b), 76))
 t = open("mp3gb_template.py").read().replace('"@@BASE@@"', "\n".join('"%s"' % l for l in lines.split("\n")))
 open("../mp3boy.py", "w").write(t)
 EOF
+python3 build_web.py
 echo "ok"

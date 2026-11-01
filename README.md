@@ -6,7 +6,19 @@ der mit der Musik mitläuft.
 ![MP3 BOY](visualizer.gif)
 Mit `mp3boy.py` baust du dir eine ROM mit deinen eigenen MP3s.
 
-## Eigene Songs in die ROM packen
+## Web-Version (ohne Installation)
+
+Öffne **`index.html`** im Browser (Doppelklick reicht, Chrome, Edge, Firefox oder Safari):
+
+1. MP3s ins Fenster ziehen
+2. Reihenfolge und Namen anpassen, Qualität wählen (High oder Long play, Stereo oder Mono)
+3. Mit dem Vorschau-Game-Boy rechts reinhören (Ton und Visualizer wie auf der echten ROM)
+4. **Build ROM** → `mp3boy.gb` wird heruntergeladen
+
+Alles läuft lokal im Browser, es wird nichts hochgeladen. Python und ffmpeg braucht
+man dafür nicht. Die Web-Version liefert praktisch dieselbe ROM wie das Python-Tool.
+
+## Eigene Songs mit dem Python-Tool
 
 Voraussetzungen: Python 3, `numpy` (`pip install numpy`) und `ffmpeg`.
 Unter Windows reicht es, `ffmpeg.exe` und `ffprobe.exe` in denselben Ordner
@@ -80,6 +92,6 @@ Pegel zu PCM-Ton. Der Interrupt läuft selbstmodifizierend aus dem HRAM
 
 ## Selbst bauen (optional)
 
-`src/` enthält den Assembler-Quellcode (`player.asm`), den Font-Generator und
-`build.sh`. Für den Build brauchst du [RGBDS](https://rgbds.gbdev.io).
-`build.sh` erzeugt `mp3boy.py` mit eingebetteter Player-ROM neu.
+`src/` enthält den Assembler-Quellcode (`player.asm`), den Font-Generator, die Vorlage
+der Web-Version (`web_template.html`) und `build.sh`. Für den Build brauchst du [RGBDS](https://rgbds.gbdev.io).
+`build.sh` erzeugt `mp3boy.py` und `index.html` mit eingebetteter Player-ROM neu.
