@@ -4,7 +4,9 @@ Verwandelt deine MP3s in eine Game-Boy-ROM, mit Titelliste, Steuerung und einem
 Spektrum-Visualizer, der mit der Musik mitläuft. Läuft auf echter Hardware
 (Flashcart mit MBC5) und in Emulatoren.
 
-![MP3 BOY Web-App](docs/web-app.png)
+### ▶ [Web-App öffnen: pedapeda.github.io/MP3-Boy](https://pedapeda.github.io/MP3-Boy/)
+
+[![MP3 BOY Web-App](docs/web-app.png)](https://pedapeda.github.io/MP3-Boy/)
 
 <table>
 <tr>
@@ -18,7 +20,8 @@ Web-App (`index.html`) oder dem Python-Tool (`mp3boy.py`).
 
 ## Web-Version (ohne Installation)
 
-Öffne **`index.html`** im Browser (Doppelklick reicht, Chrome, Edge, Firefox oder Safari):
+Öffne die **[Web-App](https://pedapeda.github.io/MP3-Boy/)** oder lade `index.html`
+herunter und öffne sie per Doppelklick (Chrome, Edge, Firefox oder Safari):
 
 1. MP3s ins Fenster ziehen
 2. Reihenfolge und Namen anpassen, Qualität wählen (High oder Long play, Stereo oder Mono)
