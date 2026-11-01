@@ -1,10 +1,20 @@
 # MP3 BOY: MP3-Player für den Game Boy (DMG)
 
-`mp3boy.gb` ist eine fertige ROM mit zwei Demo-Songs und einem Spektrum-Visualizer,
-der mit der Musik mitläuft.
+Verwandelt deine MP3s in eine Game-Boy-ROM, mit Titelliste, Steuerung und einem
+Spektrum-Visualizer, der mit der Musik mitläuft. Läuft auf echter Hardware
+(Flashcart mit MBC5) und in Emulatoren.
 
-![MP3 BOY](visualizer.gif)
-Mit `mp3boy.py` baust du dir eine ROM mit deinen eigenen MP3s.
+![MP3 BOY Web-App](docs/web-app.png)
+
+<table>
+<tr>
+<td align="center"><img src="visualizer.gif" width="320" alt="ROM im Emulator SameBoy"><br><sub>Die fertige ROM im Emulator (SameBoy)</sub></td>
+<td align="center"><img src="docs/web-preview.gif" width="240" alt="Live-Vorschau in der Web-App"><br><sub>Live-Vorschau in der Web-App</sub></td>
+</tr>
+</table>
+
+`mp3boy.gb` ist eine fertige ROM mit zwei Demo-Songs. Eigene ROMs baust du mit der
+Web-App (`index.html`) oder dem Python-Tool (`mp3boy.py`).
 
 ## Web-Version (ohne Installation)
 
