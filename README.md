@@ -1,6 +1,9 @@
 # MP3 BOY: MP3-Player für den Game Boy (DMG)
 
-`mp3boy.gb` ist eine fertige ROM mit zwei Demo-Songs.
+`mp3boy.gb` ist eine fertige ROM mit zwei Demo-Songs und einem Spektrum-Visualizer,
+der mit der Musik mitläuft.
+
+![MP3 BOY](visualizer.gif)
 Mit `mp3boy.py` baust du dir eine ROM mit deinen eigenen MP3s.
 
 ## Eigene Songs in die ROM packen
@@ -23,7 +26,7 @@ Optionen:
 Als Namen nimmt das Tool den ID3-Titel, sonst den Dateinamen. Neben MP3
 gehen auch WAV, FLAC, OGG, M4A usw.
 
-**Kapazität:** 8 MB ROM ≈ 8,5 Minuten in bester Qualität, mit `--lang` ≈ 17 Minuten.
+**Kapazität:** 8 MB ROM ≈ 8 Minuten in bester Qualität, mit `--lang` ≈ 16 Minuten.
 Bis zu 120 Titel.
 
 ## Steuerung (Anzeige auf Englisch)
@@ -38,6 +41,15 @@ Bis zu 120 Titel.
 | SELECT         | Cursor springt zum laufenden Titel    |
 
 Am Ende eines Titels startet automatisch der nächste.
+
+## Spektrum-Visualizer
+
+20 Frequenzbänder von 60 Hz bis 7,6 kHz, mit sanft fallenden Balken. Der Game Boy
+ist zu langsam für eine Echtzeit-FFT, deshalb berechnet `mp3boy.py` das Spektrum
+vorher (62 Bilder pro Sekunde) und legt es an den Anfang jeder 16-KB-Bank (640 Byte,
+knapp 4 % Platz). Der Player liest immer das Bild zur gerade spielenden Stelle, so
+bleibt alles exakt synchron. Gezeichnet wird flackerfrei: erst wachsen von unten,
+dann schrumpfen von oben.
 
 ## Auf echter Hardware
 

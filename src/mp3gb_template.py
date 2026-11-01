@@ -32,6 +32,10 @@ TABLE = 0x3100
 ENTRY = 32
 MAX_TRACKS = (0x4000 - TABLE) // ENTRY
 NAME_LEN = 24
+VIS_BYTES = 0x280               # Spektrum-Kopf je Bank
+AUDIO_PER_BANK = BANK - VIS_BYTES
+VIS_FRAMES = 62
+VIS_BANDS = 20
 
 BASE_ROM = zlib.decompress(base64.b64decode(
 "@@BASE@@"
@@ -138,6 +142,58 @@ def quantize(ch, gate=0.03, shape=0.8):
     return np.frombuffer(bytes(out), dtype=np.uint8)
 
 
+def spectrum_frames(mono, n_banks):
+    """Spektrum fuer jeden Visualizer-Frame (20 Baender, 0..15).
+    Frame k einer Bank = Audioadressen mit High-Byte $42+k."""
+    j = np.arange(AUDIO_PER_BANK)
+    frame_of = ((0x4280 + j) >> 8) - 0x42
+    centers = np.array([j[frame_of == k].mean() for k in range(VIS_FRAMES)])
+    c = (np.arange(n_banks)[:, None] * AUDIO_PER_BANK + centers[None, :]).ravel().astype(int)
+    N = 512
+    total = n_banks * AUDIO_PER_BANK
+    pad = np.zeros(total + N * 3)
+    pad[N:N + len(mono)] = mono[:total]
+    idx = c[:, None] + N // 2 + np.arange(N)[None, :]
+    win = np.hanning(N)
+    spec = np.abs(np.fft.rfft(pad[idx] * win, axis=1))
+    freqs = np.fft.rfftfreq(N, 1 / RATE)
+    edges = np.geomspace(60, min(7600, RATE / 2 - 200), VIS_BANDS + 1)
+    cols = []
+    for b in range(VIS_BANDS):
+        m = (freqs >= edges[b]) & (freqs < edges[b + 1])
+        if not m.any():
+            m = np.zeros(len(freqs), bool)
+            m[np.argmin(np.abs(freqs - np.sqrt(edges[b] * edges[b + 1])))] = True
+        cols.append(spec[:, m].mean(axis=1))
+    bands = np.stack(cols, axis=1)
+    db = 20 * np.log10(bands + 1e-6)
+    top = np.percentile(db, 99, axis=0)            # jedes Band erreicht oben die Spitze
+    lv = (db - (top - 33)) / 33 * 15
+    lv = np.clip(lv, 0, 15)
+    # langsam abfallende Balken
+    out = np.empty_like(lv)
+    prev = np.zeros(VIS_BANDS)
+    fall = 0.7 if RATE == 16384 else 1.4
+    for t in range(len(lv)):
+        prev = np.maximum(lv[t], prev - fall)
+        out[t] = prev
+    return np.round(out).astype(np.uint8).reshape(n_banks, VIS_FRAMES, VIS_BANDS)
+
+
+def pack_banks(levels, vis):
+    """Audio + Spektrum zu Baenken zusammensetzen."""
+    nb = vis.shape[0]
+    data = bytearray()
+    for b in range(nb):
+        v = vis[b]
+        head = bytes(((v[:, 0::2] << 4) | v[:, 1::2]).ravel().tolist())
+        head += b"\x00" * (VIS_BYTES - len(head))
+        chunk = levels[b * AUDIO_PER_BANK:(b + 1) * AUDIO_PER_BANK]
+        chunk += b"\x44" * (AUDIO_PER_BANK - len(chunk))   # Rest = Stille
+        data += head + chunk
+    return data
+
+
 def collect(inputs):
     files = []
     for p in inputs:
@@ -186,7 +242,7 @@ def main():
         if args.max_seconds > 0:
             a = a[: int(args.max_seconds * RATE)]
         free_banks = MAX_BANKS - banks_used
-        max_samples = free_banks * BANK
+        max_samples = free_banks * AUDIO_PER_BANK
         if max_samples < RATE:
             print("  ! ROM voll (8 MB), Titel uebersprungen")
             break
@@ -196,9 +252,10 @@ def main():
         a = normalize(a)
         l = quantize(a[:, 0])
         r = quantize(a[:, 1])
-        data = bytearray(((l << 4) | r).astype(np.uint8).tobytes())
-        nb = math.ceil(len(data) / BANK)
-        data += b"\x44" * (nb * BANK - len(data))   # Rest der Bank = Stille
+        levels = bytes(((l << 4) | r).astype(np.uint8).tobytes())
+        nb = math.ceil(len(levels) / AUDIO_PER_BANK)
+        vis = spectrum_frames((a[:, 0] + a[:, 1]) / 2, nb)
+        data = pack_banks(levels, vis)
         start = banks_used
         rom += data
         banks_used += nb

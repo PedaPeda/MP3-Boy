@@ -88,10 +88,12 @@ SPECIAL = {
     134: [0x00, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x00],  # Stop
     135: [0xFF, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00],  # Doppellinie
 }
+for n in range(5):  # Spektrum-Balken: n*2 Pixel hoch, 6 px breit
+    SPECIAL[136 + n] = [0x7E if y >= 8 - 2 * n else 0x00 for y in range(8)]
 
 def build():
     tiles = []
-    for code in range(136):
+    for code in range(141):
         if code in SPECIAL:
             rows = SPECIAL[code]
         else:

@@ -4,6 +4,8 @@
 ;  Kanal 3 liefert einen konstanten Pegel, NR50 moduliert ihn pro Sample
 ;  (3 Bit je Seite). Ein Datenbyte = ein Stereo-Sample = direkt NR50.
 ;  Tracks beginnen an Bankgrenzen; Ende = Startbank + Bankanzahl.
+;  Jede Audio-Bank: $4000-$427F Spektrum (62 Frames x 10 Byte = 20 Baender
+;  a 4 Bit), Audio ab $4280. Frame = High-Byte des Audiozeigers - $42.
 ;
 ;  Tracktabelle (vom Konverter geschrieben) in Bank 0:
 ;    $3000        Anzahl Tracks
@@ -36,7 +38,9 @@ DEF rIE    EQU $FFFF
 DEF TRACK_COUNT EQU $3000
 DEF TRACK_MODE  EQU $3001
 DEF TRACK_TABLE EQU $3100
-DEF LIST_ROWS   EQU 11
+DEF LIST_ROWS   EQU 6
+DEF VIS_TOP     EQU 9
+DEF AUDIO_START EQU $4280
 DEF LIST_TOP    EQU 2
 
 DEF T_BAR0  EQU 128
@@ -47,6 +51,7 @@ DEF T_PLAY  EQU 132
 DEF T_PAUSE EQU 133
 DEF T_STOP  EQU 134
 DEF T_LINE  EQU 135
+DEF T_VIS0  EQU 136
 
 DEF PAD_RIGHT  EQU 0
 DEF PAD_LEFT   EQU 1
@@ -96,6 +101,10 @@ wLastSecL:  db
 wLastSecH:  db
 wSecL:      db
 wSecH:      db
+wFrame:     db
+wHeights:   ds 20
+wShown:     ds 20       ; aktuell angezeigte Hoehen
+wMaxH:      ds 20
 wLine:      ds 20
 
 ; ---------------------------------------------------------------------
@@ -111,8 +120,10 @@ IsrCarry:
     pop af
     reti
 .bank
-    ld a, $40
+    ld a, HIGH(AUDIO_START)
     ldh [hSmpHi], a
+    ld a, LOW(AUDIO_START)
+    ldh [hSmpLo], a
     ldh a, [hBankL]
     inc a
     ldh [hBankL], a
@@ -269,10 +280,11 @@ Start:
 
     call DrawList
     call DrawStatus
+    call ClearVis
 
     ld a, [wCount]
     or a
-    jr nz, MainLoop
+    jp nz, MainLoop
     ld hl, TxtEmpty
     ld de, $9800 + 32*5
     call PrintZ
@@ -325,7 +337,21 @@ MainLoop:
     call nz, JumpToPlaying
 
     call UpdateTime
-    jr MainLoop
+
+    ; Spektrum: jedes 2. Bild, nur bei laufender Wiedergabe
+    ld a, [wFrame]
+    inc a
+    ld [wFrame], a
+    and 1
+    jp nz, MainLoop
+    ld a, [wPlaying]
+    cp $FF
+    jp z, MainLoop
+    ld a, [wPaused]
+    or a
+    jp nz, MainLoop
+    call DrawVis
+    jp MainLoop
 
 ; ---------------------------------------------------------------------
 SoundInit:
@@ -551,11 +577,12 @@ PlayTrack:
     ld [wDurL], a
     ld a, [hl+]
     ld [wDurH], a
-    xor a
+    ld a, LOW(AUDIO_START)
     ldh [hSmpLo], a
+    xor a
     ldh [hEnd], a
     ld [wPaused], a
-    ld a, $40
+    ld a, HIGH(AUDIO_START)
     ldh [hSmpHi], a
     ldh a, [hTMA]
     ldh [rTIMA], a
@@ -572,6 +599,7 @@ PlayTrack:
 StopPlayback:
     xor a
     ldh [rIE], a
+    call ClearVis
     ld a, $FF
     ld [wPlaying], a
     ld [wLastSecL], a
@@ -640,6 +668,25 @@ UpdateTime:
     jr c, .lo
     inc hl
 .lo
+    ; Korrektur: 640 von 16384 Bytes je Bank sind Spektrumdaten
+    ; -> t = t - (t * 10) / 256
+    ld d, h
+    ld e, l
+    add hl, hl
+    ld b, h
+    ld c, l
+    add hl, hl
+    add hl, hl
+    add hl, bc
+    ld c, h
+    ld h, d
+    ld l, e
+    ld a, l
+    sub c
+    ld l, a
+    ld a, h
+    sbc 0
+    ld h, a
     ld a, l
     ld [wSecL], a
     ld c, a
@@ -936,6 +983,153 @@ DrawList:
     ld a, b
     cp LIST_ROWS
     jr nz, .row
+    ret
+
+; ---------------------------------------------------------------------
+; Spektrum des aktuellen Frames aus der laufenden Bank lesen und zeichnen
+DrawVis:
+    ldh a, [hSmpHi]
+    sub HIGH(AUDIO_START)
+    jr nc, .a
+    xor a
+.a
+    cp 62
+    jr c, .b
+    ld a, 61
+.b
+    ld l, a                 ; hl = $4000 + a * 10
+    ld h, 0
+    add hl, hl
+    ld d, h
+    ld e, l
+    add hl, hl
+    add hl, hl
+    add hl, de
+    ld de, $4000
+    add hl, de
+    ld de, wHeights
+    ld b, 10
+.unp
+    ld a, [hl+]
+    ld c, a
+    swap a
+    and $0F
+    ld [de], a
+    inc de
+    ld a, c
+    and $0F
+    ld [de], a
+    inc de
+    dec b
+    jr nz, .unp
+    jr DrawBars
+
+ClearVis:
+    ld hl, wHeights
+    ld b, 20
+    xor a
+.z
+    ld [hl+], a
+    dec b
+    jr nz, .z
+    ; fallthrough
+
+; Balken flackerfrei zeichnen: erst max(alt,neu) von unten nach oben,
+; dann neu von oben nach unten -> jeder Zwischenzustand ist lueckenlos.
+DrawBars:
+    ld hl, wShown
+    ld de, wHeights
+    ld bc, wMaxH
+    ld a, 20
+.mx
+    push af
+    ld a, [de]
+    cp [hl]
+    jr nc, .big
+    ld a, [hl]
+.big
+    ld [bc], a
+    inc hl
+    inc de
+    inc bc
+    pop af
+    dec a
+    jr nz, .mx
+    ld hl, wMaxH
+    ld b, 0
+    call BarRow
+    ld b, 4
+    call BarRow
+    ld b, 8
+    call BarRow
+    ld b, 12
+    call BarRow
+    ld hl, wHeights
+    ld b, 12
+    call BarRow
+    ld b, 8
+    call BarRow
+    ld b, 4
+    call BarRow
+    ld b, 0
+    call BarRow
+    ; angezeigt = neu
+    ld hl, wHeights
+    ld de, wShown
+    ld c, 20
+.cp
+    ld a, [hl+]
+    ld [de], a
+    inc de
+    dec c
+    jr nz, .cp
+    ret
+
+; HL = Hoehen (20), B = Schwelle (0 = unterste Zeile ... 12 = oberste)
+; HL bleibt erhalten
+BarRow:
+    push hl
+    ld de, wLine
+    ld c, 20
+.col
+    ld a, [hl+]
+    sub b
+    jr nc, .pos
+    xor a
+.pos
+    cp 5
+    jr c, .ok
+    ld a, 4
+.ok
+    add T_VIS0
+    ld [de], a
+    inc de
+    dec c
+    jr nz, .col
+    ; Zeile = VIS_TOP + 3 - B/4
+    ld a, b
+    rrca
+    rrca
+    cpl
+    inc a                   ; -B/4
+    add VIS_TOP + 3
+    ld l, a
+    ld h, 0
+    add hl, hl
+    add hl, hl
+    add hl, hl
+    add hl, hl
+    add hl, hl
+    ld de, $9800
+    add hl, de
+    ld d, h
+    ld e, l
+    ld hl, wLine
+    ld c, 20
+    push bc
+    call PrintN
+    pop bc
+    pop hl
     ret
 
 ; ---------------------------------------------------------------------

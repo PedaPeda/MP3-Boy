@@ -32,39 +32,46 @@ TABLE = 0x3100
 ENTRY = 32
 MAX_TRACKS = (0x4000 - TABLE) // ENTRY
 NAME_LEN = 24
+VIS_BYTES = 0x280               # Spektrum-Kopf je Bank
+AUDIO_PER_BANK = BANK - VIS_BYTES
+VIS_FRAMES = 62
+VIS_BANDS = 20
 
 BASE_ROM = zlib.decompress(base64.b64decode(
-"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"
-"IBAIBALBf8835Ey6cw=="
+"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"
+"DofD4XA4HA6Hw+FwOBwOh8Ph/D/wT9y4L6k="
 ))
 
 AUDIO_EXT = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".opus", ".wma", ".aiff", ".aif"}
@@ -168,6 +175,58 @@ def quantize(ch, gate=0.03, shape=0.8):
     return np.frombuffer(bytes(out), dtype=np.uint8)
 
 
+def spectrum_frames(mono, n_banks):
+    """Spektrum fuer jeden Visualizer-Frame (20 Baender, 0..15).
+    Frame k einer Bank = Audioadressen mit High-Byte $42+k."""
+    j = np.arange(AUDIO_PER_BANK)
+    frame_of = ((0x4280 + j) >> 8) - 0x42
+    centers = np.array([j[frame_of == k].mean() for k in range(VIS_FRAMES)])
+    c = (np.arange(n_banks)[:, None] * AUDIO_PER_BANK + centers[None, :]).ravel().astype(int)
+    N = 512
+    total = n_banks * AUDIO_PER_BANK
+    pad = np.zeros(total + N * 3)
+    pad[N:N + len(mono)] = mono[:total]
+    idx = c[:, None] + N // 2 + np.arange(N)[None, :]
+    win = np.hanning(N)
+    spec = np.abs(np.fft.rfft(pad[idx] * win, axis=1))
+    freqs = np.fft.rfftfreq(N, 1 / RATE)
+    edges = np.geomspace(60, min(7600, RATE / 2 - 200), VIS_BANDS + 1)
+    cols = []
+    for b in range(VIS_BANDS):
+        m = (freqs >= edges[b]) & (freqs < edges[b + 1])
+        if not m.any():
+            m = np.zeros(len(freqs), bool)
+            m[np.argmin(np.abs(freqs - np.sqrt(edges[b] * edges[b + 1])))] = True
+        cols.append(spec[:, m].mean(axis=1))
+    bands = np.stack(cols, axis=1)
+    db = 20 * np.log10(bands + 1e-6)
+    top = np.percentile(db, 99, axis=0)            # jedes Band erreicht oben die Spitze
+    lv = (db - (top - 33)) / 33 * 15
+    lv = np.clip(lv, 0, 15)
+    # langsam abfallende Balken
+    out = np.empty_like(lv)
+    prev = np.zeros(VIS_BANDS)
+    fall = 0.7 if RATE == 16384 else 1.4
+    for t in range(len(lv)):
+        prev = np.maximum(lv[t], prev - fall)
+        out[t] = prev
+    return np.round(out).astype(np.uint8).reshape(n_banks, VIS_FRAMES, VIS_BANDS)
+
+
+def pack_banks(levels, vis):
+    """Audio + Spektrum zu Baenken zusammensetzen."""
+    nb = vis.shape[0]
+    data = bytearray()
+    for b in range(nb):
+        v = vis[b]
+        head = bytes(((v[:, 0::2] << 4) | v[:, 1::2]).ravel().tolist())
+        head += b"\x00" * (VIS_BYTES - len(head))
+        chunk = levels[b * AUDIO_PER_BANK:(b + 1) * AUDIO_PER_BANK]
+        chunk += b"\x44" * (AUDIO_PER_BANK - len(chunk))   # Rest = Stille
+        data += head + chunk
+    return data
+
+
 def collect(inputs):
     files = []
     for p in inputs:
@@ -216,7 +275,7 @@ def main():
         if args.max_seconds > 0:
             a = a[: int(args.max_seconds * RATE)]
         free_banks = MAX_BANKS - banks_used
-        max_samples = free_banks * BANK
+        max_samples = free_banks * AUDIO_PER_BANK
         if max_samples < RATE:
             print("  ! ROM voll (8 MB), Titel uebersprungen")
             break
@@ -226,9 +285,10 @@ def main():
         a = normalize(a)
         l = quantize(a[:, 0])
         r = quantize(a[:, 1])
-        data = bytearray(((l << 4) | r).astype(np.uint8).tobytes())
-        nb = math.ceil(len(data) / BANK)
-        data += b"\x44" * (nb * BANK - len(data))   # Rest der Bank = Stille
+        levels = bytes(((l << 4) | r).astype(np.uint8).tobytes())
+        nb = math.ceil(len(levels) / AUDIO_PER_BANK)
+        vis = spectrum_frames((a[:, 0] + a[:, 1]) / 2, nb)
+        data = pack_banks(levels, vis)
         start = banks_used
         rom += data
         banks_used += nb
