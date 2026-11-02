@@ -1,110 +1,111 @@
-# MP3 BOY: MP3-Player für den Game Boy (DMG)
+# MP3 BOY: an MP3 player for the Game Boy (DMG)
 
-Verwandelt deine MP3s in eine Game-Boy-ROM, mit Titelliste, Steuerung und einem
-Spektrum-Visualizer, der mit der Musik mitläuft. Läuft auf echter Hardware
-(Flashcart mit MBC5) und in Emulatoren.
+Turns your MP3s into a Game Boy ROM, with a track list, playback controls and a
+spectrum visualizer that moves with the music. Runs on real hardware
+(flash cart with MBC5) and in emulators.
 
-### ▶ [Web-App öffnen: pedapeda.github.io/MP3-Boy](https://pedapeda.github.io/MP3-Boy/)
+### ▶ [Open the web app: pedapeda.github.io/MP3-Boy](https://pedapeda.github.io/MP3-Boy/)
 
-[![MP3 BOY Web-App](docs/web-app.png)](https://pedapeda.github.io/MP3-Boy/)
+[![MP3 BOY web app](docs/web-app.png)](https://pedapeda.github.io/MP3-Boy/)
 
 <table>
 <tr>
-<td align="center"><img src="visualizer.gif" width="320" alt="ROM im Emulator SameBoy"><br><sub>Die fertige ROM im Emulator (SameBoy)</sub></td>
-<td align="center"><img src="docs/web-preview.gif" width="240" alt="Live-Vorschau in der Web-App"><br><sub>Live-Vorschau in der Web-App</sub></td>
+<td align="center"><img src="visualizer.gif" width="320" alt="ROM running in the SameBoy emulator"><br><sub>The finished ROM in an emulator (SameBoy)</sub></td>
+<td align="center"><img src="docs/web-preview.gif" width="240" alt="Live preview in the web app"><br><sub>Live preview in the web app</sub></td>
 </tr>
 </table>
 
-`mp3boy.gb` ist eine fertige ROM mit zwei Demo-Songs. Eigene ROMs baust du mit der
-Web-App (`index.html`) oder dem Python-Tool (`mp3boy.py`).
+`mp3boy.gb` is a ready-to-play ROM with two demo songs. Build your own ROMs with the
+web app (`index.html`) or the Python tool (`mp3boy.py`).
 
-## Web-Version (ohne Installation)
+## Web app (no installation)
 
-Öffne die **[Web-App](https://pedapeda.github.io/MP3-Boy/)** oder lade `index.html`
-herunter und öffne sie per Doppelklick (Chrome, Edge, Firefox oder Safari):
+Open the **[web app](https://pedapeda.github.io/MP3-Boy/)**, or download `index.html`
+and double-click it (Chrome, Edge, Firefox or Safari):
 
-1. MP3s ins Fenster ziehen
-2. Reihenfolge und Namen anpassen, Qualität wählen (High oder Long play, Stereo oder Mono)
-3. Mit dem Vorschau-Game-Boy rechts reinhören (Ton und Visualizer wie auf der echten ROM)
-4. **Build ROM** → `mp3boy.gb` wird heruntergeladen
+1. Drag your MP3s into the window
+2. Reorder and rename tracks, pick the quality (High or Long play, Stereo or Mono)
+3. Listen on the preview Game Boy on the right (sound and visualizer match the real ROM)
+4. Click **Build ROM** → `mp3boy.gb` is downloaded
 
-Alles läuft lokal im Browser, es wird nichts hochgeladen. Python und ffmpeg braucht
-man dafür nicht. Die Web-Version liefert praktisch dieselbe ROM wie das Python-Tool.
+Everything runs locally in your browser, nothing is uploaded. No Python or ffmpeg
+needed. The web app produces practically the same ROM as the Python tool.
 
-## Eigene Songs mit dem Python-Tool
+## Python tool
 
-Voraussetzungen: Python 3, `numpy` (`pip install numpy`) und `ffmpeg`.
-Unter Windows reicht es, `ffmpeg.exe` und `ffprobe.exe` in denselben Ordner
-wie `mp3boy.py` zu legen.
+Requirements: Python 3, `numpy` (`pip install numpy`) and `ffmpeg`.
+On Windows you can simply put `ffmpeg.exe` and `ffprobe.exe` in the same folder
+as `mp3boy.py`.
 
 ```
 python mp3boy.py songs -o mp3boy.gb
-python mp3boy.py lied1.mp3 lied2.mp3 -o mp3boy.gb
+python mp3boy.py song1.mp3 song2.mp3 -o mp3boy.gb
 ```
 
-Optionen:
-- `--lang`: Langspiel mit 8192 Hz: doppelte Spielzeit, aber dumpferer Klang
-- `--mono`: Mono statt Stereo
-- `--artist`: Interpret vor den Titel setzen ("ARTIST - TITLE")
-- `--max-seconds 90`: jeden Song nach N Sekunden abschneiden
+Options:
+- `--lang`: long play at 8192 Hz: twice the playing time, but a duller sound
+- `--mono`: mono instead of stereo
+- `--artist`: put the artist in front of the title ("ARTIST - TITLE")
+- `--max-seconds 90`: cut every song after N seconds
 
-Als Namen nimmt das Tool den ID3-Titel, sonst den Dateinamen. Neben MP3
-gehen auch WAV, FLAC, OGG, M4A usw.
+Track names come from the ID3 title, otherwise from the file name. Besides MP3,
+WAV, FLAC, OGG, M4A etc. work too.
 
-**Kapazität:** 8 MB ROM ≈ 8 Minuten in bester Qualität, mit `--lang` ≈ 16 Minuten.
-Bis zu 120 Titel.
+**Capacity:** an 8 MB ROM holds about 8 minutes at best quality, about 16 minutes
+with `--lang`. Up to 120 tracks.
 
-## Steuerung (Anzeige auf Englisch)
+## Controls
 
-| Taste          | Funktion                              |
-|----------------|---------------------------------------|
-| Hoch / Runter  | durch die Liste blättern (halten = schnell) |
-| A              | markierten Titel abspielen / Pause    |
-| START          | Pause / Weiter                        |
-| B              | Stopp                                 |
-| Links / Rechts | vorheriger / nächster Titel           |
-| SELECT         | Cursor springt zum laufenden Titel    |
+| Button       | Action                                      |
+|--------------|---------------------------------------------|
+| Up / Down    | scroll through the list (hold = fast)       |
+| A            | play selected track / pause                 |
+| START        | pause / resume                              |
+| B            | stop                                        |
+| Left / Right | previous / next track                       |
+| SELECT       | jump the cursor to the playing track        |
 
-Am Ende eines Titels startet automatisch der nächste.
+When a track ends, the next one starts automatically.
 
-## Spektrum-Visualizer
+## Spectrum visualizer
 
-20 Frequenzbänder von 60 Hz bis 7,6 kHz, mit sanft fallenden Balken. Der Game Boy
-ist zu langsam für eine Echtzeit-FFT, deshalb berechnet `mp3boy.py` das Spektrum
-vorher (62 Bilder pro Sekunde) und legt es an den Anfang jeder 16-KB-Bank (640 Byte,
-knapp 4 % Platz). Der Player liest immer das Bild zur gerade spielenden Stelle, so
-bleibt alles exakt synchron. Gezeichnet wird flackerfrei: erst wachsen von unten,
-dann schrumpfen von oben.
+20 frequency bands from 60 Hz to 7.6 kHz, with smoothly falling bars. The Game Boy
+is too slow for a real-time FFT, so the converter calculates the spectrum ahead of
+time (62 frames per second) and stores it at the start of every 16 KB bank (640 bytes,
+just under 4 % of the space). The player always reads the frame for the current
+playback position, so everything stays exactly in sync. Drawing is flicker-free:
+bars grow from the bottom first, then shrink from the top.
 
-## Auf echter Hardware
+## Real hardware
 
-Du brauchst ein Flashcart mit **MBC5**-Unterstützung (z. B. EverDrive GB X-Serie,
-EZ-Flash Junior oder ein 8-MB-MBC5-Repro-Flashcart). Die ROM läuft auf DMG,
-Pocket, Color und Advance.
+You need a flash cart with **MBC5** support (e.g. EverDrive GB X series,
+EZ-Flash Junior or an 8 MB MBC5 repro flash cart). The ROM runs on DMG,
+Pocket, Color and Advance.
 
-## Emulatoren
+## Emulators
 
-Getestet mit **SameBoy**. BGB, Emulicious, Gambatte und mGBA sollten den Ton
-richtig wiedergeben. **PyBoy und einige einfache Emulatoren bleiben stumm**,
-weil sie das Master-Volume-Register nicht emulieren.
+Tested with **SameBoy**. BGB, Emulicious, Gambatte and mGBA should play the sound
+correctly. **PyBoy and some simple emulators stay silent** because they don't
+emulate the master volume register.
 
-## Wie es funktioniert
+## How it works
 
-Der Game Boy kann MP3 nicht selbst dekodieren (ca. 1 MHz CPU). Deshalb macht das
-PC-Tool die Arbeit. Es dekodiert mit ffmpeg, entzerrt den Klang (Präsenz,
-Ausgleich der Höhendämpfung durch das Sample-and-Hold), gleicht die Lautheit an,
-rechnet auf 16384 Hz um und quantisiert symmetrisch auf 8 Stufen pro Stereoseite.
-Eine Rauschformung schiebt das Rauschen in tiefe Frequenzen, wo die Musik es überdeckt.
-Stille liegt exakt auf einer Stufe, deshalb rauscht nichts in leisen Passagen.
+The Game Boy can't decode MP3 itself (its CPU runs at about 1 MHz), so the converter
+does the work. It decodes the audio, applies EQ (presence boost, compensation for
+the treble loss caused by sample-and-hold), evens out the loudness, resamples to
+16384 Hz and quantizes symmetrically to 8 steps per stereo channel. Noise shaping
+pushes the quantization noise into low frequencies, where the music masks it.
+Silence sits exactly on one step, so quiet passages have no hiss.
 
-Auf dem Game Boy liefert Kanal 3 (Wave) einen konstanten Pegel. Ein
-Timer-Interrupt schreibt 16384-mal pro Sekunde ein Byte in das
-Master-Volume-Register NR50 (Bits 6–4 links, 2–0 rechts) und moduliert damit den
-Pegel zu PCM-Ton. Der Interrupt läuft selbstmodifizierend aus dem HRAM
-(36 von 64 Takten). Die Audiodaten liegen in MBC5-Banks à 16 KB (= 1 Sekunde).
+On the Game Boy, channel 3 (wave) outputs a constant level. A timer interrupt
+writes one byte 16384 times per second into the master volume register NR50
+(bits 6–4 left, 2–0 right), modulating that level into PCM audio. The interrupt
+runs as self-modifying code from HRAM (36 of 64 available cycles). The audio data
+lives in 16 KB MBC5 banks (= 1 second each).
 
-## Selbst bauen (optional)
+## Building from source (optional)
 
-`src/` enthält den Assembler-Quellcode (`player.asm`), den Font-Generator, die Vorlage
-der Web-Version (`web_template.html`) und `build.sh`. Für den Build brauchst du [RGBDS](https://rgbds.gbdev.io).
-`build.sh` erzeugt `mp3boy.py` und `index.html` mit eingebetteter Player-ROM neu.
+`src/` contains the assembly source (`player.asm`), the font generator, the web app
+template (`web_template.html`) and `build.sh`. Building requires
+[RGBDS](https://rgbds.gbdev.io). `build.sh` regenerates `mp3boy.py` and `index.html`
+with the embedded player ROM.
